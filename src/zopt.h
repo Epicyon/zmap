@@ -105,6 +105,9 @@ struct gengetopt_args_info
   char * output_args_arg;	/**< @brief Arguments to pass to output module.  */
   char * output_args_orig;	/**< @brief Arguments to pass to output module original value given at command line.  */
   const char *output_args_help; /**< @brief Arguments to pass to output module help description.  */
+  char * output_filter_arg;	/**< @brief Read a file containing an output filter on the first line.  */
+  char * output_filter_orig;	/**< @brief Read a file containing an output filter on the first line original value given at command line.  */
+  const char *output_filter_help; /**< @brief Read a file containing an output filter on the first line help description.  */
   const char *list_output_modules_help; /**< @brief List available output modules help description.  */
   const char *list_probe_modules_help; /**< @brief List available probe modules help description.  */
   const char *list_output_fields_help; /**< @brief List all fields that can be output by selected probe module help description.  */
@@ -143,6 +146,7 @@ struct gengetopt_args_info
   unsigned int output_module_given ;	/**< @brief Whether output-module was given.  */
   unsigned int probe_args_given ;	/**< @brief Whether probe-args was given.  */
   unsigned int output_args_given ;	/**< @brief Whether output-args was given.  */
+  unsigned int output_filter_given ;	/**< @brief Whether output-filter was given.  */
   unsigned int list_output_modules_given ;	/**< @brief Whether list-output-modules was given.  */
   unsigned int list_probe_modules_given ;	/**< @brief Whether list-probe-modules was given.  */
   unsigned int list_output_fields_given ;	/**< @brief Whether list-output-fields was given.  */

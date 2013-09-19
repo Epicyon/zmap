@@ -24,18 +24,23 @@ GCCWARNINGS = -Wall -Wformat=2 -Wno-format-nonliteral\
 GCCHARDENING=-U_FORTIFY_SOURCE -D_FORTIFY_SOURCE=2 -fstack-protector-all -fwrapv -fPIC --param ssp-buffer-size=1
 LDHARDENING=-z relro -z now
 
-EXTRACFLAGS=-std=gnu99 -g -O2 $(GCCHARDENING) $(GCCWARNINGS) $(EXTRA_CFLAGS) -Werror
+EXTRACFLAGS=-std=gnu99 -g -O2 $(GCCHARDENING) $(GCCWARNINGS) $(EXTRA_CFLAGS)
 EXTRALDFLAGS= $(LDHARDENING)
 
 CFLAGS+=$(INCLUDE) $(EXTRACFLAGS)
 LDFLAGS+=$(EXTRALDFLAGS)
 
+YACC=byacc
+YFLAGS=-d
+LEX=flex
+LFLAGS=--header-file=$*.h
+
 probemodules=module_tcp_synscan.o module_icmp_echo.o module_udp.o #ADD YOUR PROBE MODULE HERE
 outputmodules= module_csv.o #ADD YOUR OUTPUT MODULE HERE
 
-objects=constraint.o blacklist.o cyclic.o logger.o send.o recv.o state.o monitor.o zopt_compat.o zmap.o random.o output_modules.o packet.o probe_modules.o ${probemodules} ${outputmodules} validate.o rijndael-alg-fst.o get_gateway.o aesrand.o fieldset.o expression.o zmap.yy.o zmap.tab.o
-redis_objects=module_redis.o redis.o 
-parser_files=zmap.yy.c zmap.yy.h zmap.tab.c zmap.tab.h
+objects=constraint.o blacklist.o cyclic.o logger.o send.o recv.o state.o monitor.o zopt_compat.o zmap.o random.o output_modules.o packet.o probe_modules.o ${probemodules} ${outputmodules} validate.o rijndael-alg-fst.o get_gateway.o aesrand.o fieldset.o expression.o stack.o filter.o xalloc.o parser.o lexer.o
+redis_objects=module_redis.o redis.o
+parser_files=parser.c y.tab.h lexer.c lexer.h
 
 ifeq ($(REDIS), true)
 	LDLIBS+=-lhiredis
@@ -52,24 +57,14 @@ endif
 all: $(TARGETS)
 
 $(TARGETS):
-	$(CC) $(CFLAGS) $(DFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
+	$(CC) $(CFLAGS) -Werror $(DFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
 
 zmap: $(objects)
 
 zopt_compat.o: zopt.c
 
-zmap.tab.o: zmap.tab.c zmap.tab.h expression.o
-
-zmap.yy.o: zmap.yy.c zmap.yy.h
-
 zopt.c zopt.h: zopt.ggo
 	gengetopt -C --no-help --no-version -i $^ -F $*
-
-zmap.tab.c zmap.tab.h: zmap.y
-	byacc -d zmap.y -b zmap
-
-zmap.yy.c: zmap.l
-	flex -o zmap.yy.c zmap.l
 
 install: zmap
 	$(INSTALL) zmap $(bindir)/zmap
@@ -83,7 +78,6 @@ uninstall:
 	test -f $(oldmanfile) && rm -f $(oldmanfile) && mandb -f $(oldmanfile) || /bin/true # remove old man page if it's there
 	test -f $(mandir)/zmap.1 && rm -f $(mandir)/zmap.1 && mandb -f $(mandir)/zmap.1 || /bin/true # remove current man page if it's there
 	rm -f $(bindir)/zmap
-
 
 clean:
 	-rm -f $(objects) $(redis_objects) $(parser_files) $(TARGETS)

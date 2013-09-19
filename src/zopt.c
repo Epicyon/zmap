@@ -60,6 +60,7 @@ const char *gengetopt_args_info_help[] = {
   "  -O, --output-module=name      Select output module  (default=`simple_file')",
   "      --probe-args=args         Arguments to pass to probe module",
   "      --output-args=args        Arguments to pass to output module",
+  "      --output-filter=filename  Read a file containing an output filter on the \n                                  first line",
   "      --list-output-modules     List available output modules",
   "      --list-probe-modules      List available probe modules",
   "      --list-output-fields      List all fields that can be output by selected \n                                  probe module",
@@ -143,6 +144,7 @@ void clear_given (struct gengetopt_args_info *args_info)
   args_info->output_module_given = 0 ;
   args_info->probe_args_given = 0 ;
   args_info->output_args_given = 0 ;
+  args_info->output_filter_given = 0 ;
   args_info->list_output_modules_given = 0 ;
   args_info->list_probe_modules_given = 0 ;
   args_info->list_output_fields_given = 0 ;
@@ -197,6 +199,8 @@ void clear_args (struct gengetopt_args_info *args_info)
   args_info->probe_args_orig = NULL;
   args_info->output_args_arg = NULL;
   args_info->output_args_orig = NULL;
+  args_info->output_filter_arg = NULL;
+  args_info->output_filter_orig = NULL;
   args_info->config_arg = gengetopt_strdup ("/etc/zmap/zmap.conf");
   args_info->config_orig = NULL;
   args_info->verbosity_arg = 3;
@@ -233,15 +237,16 @@ void init_args_info(struct gengetopt_args_info *args_info)
   args_info->output_module_help = gengetopt_args_info_help[25] ;
   args_info->probe_args_help = gengetopt_args_info_help[26] ;
   args_info->output_args_help = gengetopt_args_info_help[27] ;
-  args_info->list_output_modules_help = gengetopt_args_info_help[28] ;
-  args_info->list_probe_modules_help = gengetopt_args_info_help[29] ;
-  args_info->list_output_fields_help = gengetopt_args_info_help[30] ;
-  args_info->config_help = gengetopt_args_info_help[32] ;
-  args_info->quiet_help = gengetopt_args_info_help[33] ;
-  args_info->summary_help = gengetopt_args_info_help[34] ;
-  args_info->verbosity_help = gengetopt_args_info_help[35] ;
-  args_info->help_help = gengetopt_args_info_help[36] ;
-  args_info->version_help = gengetopt_args_info_help[37] ;
+  args_info->output_filter_help = gengetopt_args_info_help[28] ;
+  args_info->list_output_modules_help = gengetopt_args_info_help[29] ;
+  args_info->list_probe_modules_help = gengetopt_args_info_help[30] ;
+  args_info->list_output_fields_help = gengetopt_args_info_help[31] ;
+  args_info->config_help = gengetopt_args_info_help[33] ;
+  args_info->quiet_help = gengetopt_args_info_help[34] ;
+  args_info->summary_help = gengetopt_args_info_help[35] ;
+  args_info->verbosity_help = gengetopt_args_info_help[36] ;
+  args_info->help_help = gengetopt_args_info_help[37] ;
+  args_info->version_help = gengetopt_args_info_help[38] ;
   
 }
 
@@ -358,6 +363,8 @@ cmdline_parser_release (struct gengetopt_args_info *args_info)
   free_string_field (&(args_info->probe_args_orig));
   free_string_field (&(args_info->output_args_arg));
   free_string_field (&(args_info->output_args_orig));
+  free_string_field (&(args_info->output_filter_arg));
+  free_string_field (&(args_info->output_filter_orig));
   free_string_field (&(args_info->config_arg));
   free_string_field (&(args_info->config_orig));
   free_string_field (&(args_info->verbosity_orig));
@@ -439,6 +446,8 @@ cmdline_parser_dump(FILE *outfile, struct gengetopt_args_info *args_info)
     write_into_file(outfile, "probe-args", args_info->probe_args_orig, 0);
   if (args_info->output_args_given)
     write_into_file(outfile, "output-args", args_info->output_args_orig, 0);
+  if (args_info->output_filter_given)
+    write_into_file(outfile, "output-filter", args_info->output_filter_orig, 0);
   if (args_info->list_output_modules_given)
     write_into_file(outfile, "list-output-modules", 0, 0 );
   if (args_info->list_probe_modules_given)
@@ -731,6 +740,7 @@ cmdline_parser_internal (
         { "output-module",	1, NULL, 'O' },
         { "probe-args",	1, NULL, 0 },
         { "output-args",	1, NULL, 0 },
+        { "output-filter",	1, NULL, 0 },
         { "list-output-modules",	0, NULL, 0 },
         { "list-probe-modules",	0, NULL, 0 },
         { "list-output-fields",	0, NULL, 0 },
@@ -1111,6 +1121,20 @@ cmdline_parser_internal (
                 &(local_args_info.output_args_given), optarg, 0, 0, ARG_STRING,
                 check_ambiguity, override, 0, 0,
                 "output-args", '-',
+                additional_error))
+              goto failure;
+          
+          }
+          /* Read a file containing an output filter on the first line.  */
+          else if (strcmp (long_options[option_index].name, "output-filter") == 0)
+          {
+          
+          
+            if (update_arg( (void *)&(args_info->output_filter_arg), 
+                 &(args_info->output_filter_orig), &(args_info->output_filter_given),
+                &(local_args_info.output_filter_given), optarg, 0, 0, ARG_STRING,
+                check_ambiguity, override, 0, 0,
+                "output-filter", '-',
                 additional_error))
               goto failure;
           
