@@ -54,7 +54,7 @@ ifeq ($(JSON), true)
 	objects+=module_json.o
 endif
 
-all: $(TARGETS)
+all: parser.c lexer.c $(TARGETS)
 
 $(TARGETS):
 	$(CC) $(CFLAGS) -Werror $(DFLAGS) $(LDFLAGS) $^ -o $@ $(LDLIBS)
